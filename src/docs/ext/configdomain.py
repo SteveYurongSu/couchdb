@@ -31,7 +31,7 @@ class ConfigObject(ObjectDescription):
         domain, objtype = self.name.split(":")
         if objtype == "section":
             self.env.temp_data["section"] = signode["name"]
-            name = "[%s]" % signode["name"]
+            name = f'[{signode["name"]}]'
 
         signode += addnodes.desc_name(name, name)
 
@@ -48,7 +48,7 @@ class ConfigObject(ObjectDescription):
             data[name] = (self.env.docname, signode["descr"])
             signode["ids"].append(signode["name"])
         elif objtype == "option":
-            idx = "%s/%s" % (section, signode["name"])
+            idx = f'{section}/{signode["name"]}'
             data[idx] = (self.env.docname, signode["descr"])
             signode["ids"].append(idx)
         else:
@@ -62,17 +62,17 @@ class ConfigIndex(Index):
     shortname = "Config Quick Reference"
 
     def generate(self, docnames=None):
-        content = dict(
-            (html.escape(name), [(name, 1, info[0], name, "", "", info[1])])
+        content = {
+            html.escape(name): [(name, 1, info[0], name, "", "", info[1])]
             for name, info in self.domain.data["section"].items()
-        )
+        }
 
         options = self.domain.data["option"]
         for idx, info in sorted(options.items()):
             path, descr = info
             section, name = idx.split("/", 1)
             content[html.escape(section)].append(
-                (name, 2, path, "%s/%s" % (section, name), "", "", descr)
+                (name, 2, path, f"{section}/{name}", "", "", descr)
             )
 
         return (sorted(content.items()), False)
@@ -99,7 +99,7 @@ class ConfigDomain(Domain):
     def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
         if typ == "section":
             info = self.data[typ][target]
-            title = "[%s]" % target
+            title = f"[{target}]"
         elif typ == "option":
             assert "/" in target, "option without section: %r" % target
             section, option = target.split("/", 1)

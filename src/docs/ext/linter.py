@@ -27,9 +27,7 @@ def error_report(file, line, msg, _state=[]):
     global HAS_ERRORS, IGNORE_ERROR
     if IGNORE_ERROR:
         return
-    if _state and _state[0] == file.name:
-        pass
-    else:
+    if not _state or _state[0] != file.name:
         if _state:
             _state[0] = file.name
         else:
@@ -73,7 +71,7 @@ def validate(file):
     while True:
         line = file.readline().decode("utf-8")
         exhausted = []
-        for idx, rule in enumerate(rules):
+        for rule in rules:
             try:
                 error = rule.send(line)
             except StopIteration:
@@ -107,10 +105,11 @@ def silent_scream(file):
         else:
             IGNORE_ERROR = False
 
-        match = re.match("\s*.. lint: ignore errors for the next (\d+) line?", line)
-        if match:
+        if match := re.match(
+            "\s*.. lint: ignore errors for the next (\d+) line?", line
+        ):
             # +1 for empty line right after comment
-            counter = int(match.group(1)) + 1
+            counter = int(match[1]) + 1
 
 
 @register_rule
@@ -176,9 +175,8 @@ def whitespace_committee(file):
             error = (file, n + 1, "trailing whitespace detected!\n" "{0}".format(line))
 
         # Check for continuous empty lines
-        if prev is not None:
-            if prev.strip() == line.strip() == "":
-                error = (file, n + 1, "too many empty lines")
+        if prev is not None and prev.strip() == line.strip() == "":
+            error = (file, n + 1, "too many empty lines")
 
         # Nobody loves tabs-spaces cocktail, we prefer spaces
         if "\t" in line:
@@ -276,12 +274,11 @@ def my_lovely_hat(file):
         if line.startswith(".."):
             continue
 
-        if set(line) < set(["#", "-", "=", "*"]):
+        if set(line) < {"#", "-", "=", "*"}:
             break
-        else:
-            lines = [line, "\n", (yield None), (yield None)]
-            yield (file, n + 1, "bad title header:\n" "{}".format("".join(lines)))
-            return
+        lines = [line, "\n", (yield None), (yield None)]
+        yield (file, n + 1, f'bad title header:\n{"".join(lines)}')
+        return
 
 
 if __name__ == "__main__":
