@@ -17,6 +17,7 @@ Warning: this file needs to run from the CouchDB repo root.
 USAGE: ERLFMT_PATH=<path_to_erlfmt> python3 dev/format_check.py
 """
 
+
 import os
 import subprocess
 import sys
@@ -42,7 +43,7 @@ if __name__ == "__main__":
             print("\n %s error for %s" % (rc, path))
             stderr_lines = run_result.stderr.decode("utf-8").split("\n")
             for line in stderr_lines:
-                print("  > %s" % line, file=sys.stderr)
+                print(f"  > {line}", file=sys.stderr)
             exit_code = 1
 
     sys.exit(exit_code)

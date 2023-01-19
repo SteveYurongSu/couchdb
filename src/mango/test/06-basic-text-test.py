@@ -570,15 +570,15 @@ class AllMatchTests(mango.FriendDocsTextTests):
 @unittest.skipUnless(mango.has_text_service(), "requires text service")
 class NumStringTests(mango.DbPerClass):
     @classmethod
-    def setUpClass(klass):
-        super(NumStringTests, klass).setUpClass()
-        klass.db.recreate()
+    def setUpClass(cls):
+        super(NumStringTests, cls).setUpClass()
+        cls.db.recreate()
         if mango.has_text_service():
-            klass.db.create_text_index()
+            cls.db.create_text_index()
 
     # not available for python 2.7.x
-    def isFinite(num):
-        not (math.isinf(num) or math.isnan(num))
+    def isFinite(self):
+        not (math.isinf(self) or math.isnan(self))
 
     @given(f=st.floats().filter(isFinite).map(str) | st.floats().map(lambda f: f.hex()))
     @example("NaN")
@@ -590,13 +590,11 @@ class NumStringTests(mango.DbPerClass):
         docs = self.db.find(q)
         if len(docs) == 1:
             assert docs[0]["number_string"] == f
-        if len(docs) == 2:
-            if docs[0]["number_string"] != f:
-                assert docs[1]["number_string"] == f
+        if len(docs) == 2 and docs[0]["number_string"] != f:
+            assert docs[1]["number_string"] == f
         q = {"number_string": f}
         docs = self.db.find(q)
         if len(docs) == 1:
             assert docs[0]["number_string"] == f
-        if len(docs) == 2:
-            if docs[0]["number_string"] != f:
-                assert docs[1]["number_string"] == f
+        if len(docs) == 2 and docs[0]["number_string"] != f:
+            assert docs[1]["number_string"] == f
